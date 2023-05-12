@@ -84,36 +84,33 @@ CENTITY_TYPES = (
 
 
 def getqualified(tp):
-    if len(tp) >= 3:
-        return tp[2] + '::' + tp[0]
-    else:
-        return tp[0]
+    return f'{tp[2]}::{tp[0]}' if len(tp) >= 3 else tp[0]
 
 
-headerf = open('TCastTo.hpp', 'w')
-sourcef = open('TCastTo.cpp', 'w')
+with open('TCastTo.hpp', 'w') as headerf:
+    sourcef = open('TCastTo.cpp', 'w')
 
-headerf.write('''#pragma once
+    headerf.write('''#pragma once
 
 namespace metaforce {
 class CEntity;
 ''')
 
-for tp in CENTITY_TYPES:
-    if type(tp) == tuple:
-        headerf.write('class %s;\n' % tp[0])
-    elif isinstance(tp, Namespace):
-        headerf.write('namespace %s {\n' % tp.name)
-    elif isinstance(tp, EndNamespace):
-        headerf.write('}\n')
+    for tp in CENTITY_TYPES:
+        if type(tp) == tuple:
+            headerf.write('class %s;\n' % tp[0])
+        elif isinstance(tp, Namespace):
+            headerf.write('namespace %s {\n' % tp.name)
+        elif isinstance(tp, EndNamespace):
+            headerf.write('}\n')
 
-headerf.write('\nclass IVisitor {\npublic:\n')
+    headerf.write('\nclass IVisitor {\npublic:\n')
 
-for tp in CENTITY_TYPES:
-    if type(tp) == tuple:
-        headerf.write('  virtual void Visit(%s* p)=0;\n' % getqualified(tp))
+    for tp in CENTITY_TYPES:
+        if type(tp) == tuple:
+            headerf.write('  virtual void Visit(%s* p)=0;\n' % getqualified(tp))
 
-headerf.write('''};
+    headerf.write('''};
 
 template <class T>
 class TCastToPtr : public IVisitor {
@@ -128,11 +125,11 @@ public:
 
 ''')
 
-for tp in CENTITY_TYPES:
-    if type(tp) == tuple:
-        headerf.write('  void Visit(%s* p) override;\n' % getqualified(tp))
+    for tp in CENTITY_TYPES:
+        if type(tp) == tuple:
+            headerf.write('  void Visit(%s* p) override;\n' % getqualified(tp))
 
-headerf.write('''
+    headerf.write('''
   T* GetPtr() const { return ptr; }
   operator T*() const { return GetPtr(); }
   T& operator*() const { return *GetPtr(); }
@@ -159,8 +156,6 @@ public:
 
 }
 ''')
-
-headerf.close()
 
 sourcef.write('#include "TCastTo.hpp"\n\n')
 
